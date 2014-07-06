@@ -1,0 +1,30 @@
+           Easily create a window and OpenGL context (in Go)
+===============================================================================
+This project is not stable and may change drastically in the future (including
+its name). Nor is this project thoroughly tested, use at your own risk.
+
+That being said, it's usable on Windows, plans for linux soon.
+
+To use:
+* Create a Context (A window + OpenGL context) using CreateContext(...)
+* Close a Context through the Context's method KillWindow()
+
+Make sure to check that Context didn't return an error. Once a Context is
+created, you can use whatever OpenGL binding you want to make OpenGL calls.
+
+Events are sent through your Context's Event channel. Check out events.go for
+the different kinds of events. Make sure to deal with them regularly. An example
+on how to go through all queued events is as follows:
+
+// c is your context
+for len(c.Events) > 0 {
+	e := <-c.Events
+	switch t := e.(type) {
+	case gkdl.KeyDown:
+		
+		...
+		
+	}
+}
+
+You can swap buffers using c.SwapBuffers()
