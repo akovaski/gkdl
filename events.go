@@ -4,8 +4,8 @@ type Event interface {
 }
 
 type mouseState struct {
-	X int
-	Y int
+	X     int
+	Y     int
 	State MouseButtons
 }
 
@@ -14,9 +14,9 @@ type MouseMotion struct {
 }
 
 type MouseButtons struct {
-	L bool // left
-	R bool // right
-	M bool // middle
+	L  bool // left
+	R  bool // right
+	M  bool // middle
 	X1 bool // X1
 	X2 bool // X2
 }
@@ -33,12 +33,12 @@ type MouseButtonDown struct {
 
 type KeyDown struct {
 	Scancode byte
-	Keycode byte
+	Keycode  byte
 }
 
 type KeyUp struct {
 	Scancode byte
-	Keycode byte
+	Keycode  byte
 }
 
 type MouseWheel struct {

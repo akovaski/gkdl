@@ -24,7 +24,7 @@ func stringToUintptr(s string) uintptr {
 	return uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(s)))
 }
 
- // load DLLS
+// load DLLS
 var (
 	user32 = syscall.MustLoadDLL("user32.dll")
 
@@ -33,8 +33,8 @@ var (
 	gdi32 = syscall.MustLoadDLL("gdi32.dll")
 )
 
-
 var user32CreateWindowExW = user32.MustFindProc("CreateWindowExW")
+
 func createWindowEx(exStyle uint32, className, windowName *uint16, style uint32, x, y, width, height int32, parent _HWND, menu _HMENU, instance _HINSTANCE, param unsafe.Pointer) _HWND {
 	_ret, _, _ := user32CreateWindowExW.Call(
 		uintptr((exStyle)),
@@ -54,6 +54,7 @@ func createWindowEx(exStyle uint32, className, windowName *uint16, style uint32,
 }
 
 var user32GetDC = user32.MustFindProc("GetDC")
+
 func getDC(hWnd _HWND) _HDC {
 	_ret, _, _ := user32GetDC.Call(
 		uintptr((hWnd)),
@@ -62,6 +63,7 @@ func getDC(hWnd _HWND) _HDC {
 }
 
 var user32AdjustWindowRectEx = user32.MustFindProc("AdjustWindowRectEx")
+
 func adjustWindowRectEx(_rect *rect, style uint32, menu bool, exStyle uint32) bool {
 	_ret, _, _ := user32AdjustWindowRectEx.Call(
 		uintptr(unsafe.Pointer(_rect)),
@@ -73,6 +75,7 @@ func adjustWindowRectEx(_rect *rect, style uint32, menu bool, exStyle uint32) bo
 }
 
 var user32ReleaseDC = user32.MustFindProc("ReleaseDC")
+
 func releaseDC(hwnd _HWND, _HDC _HDC) bool {
 	_ret, _, _ := user32ReleaseDC.Call(
 		uintptr((hwnd)),
@@ -82,6 +85,7 @@ func releaseDC(hwnd _HWND, _HDC _HDC) bool {
 }
 
 var user32DestroyWindow = user32.MustFindProc("DestroyWindow")
+
 func destroyWindow(hwnd _HWND) bool {
 	_ret, _, _ := user32DestroyWindow.Call(
 		uintptr((hwnd)),
@@ -90,6 +94,7 @@ func destroyWindow(hwnd _HWND) bool {
 }
 
 var user32LoadIconW = user32.MustFindProc("LoadIconW")
+
 func loadIcon(hInstance _HINSTANCE, iconName *uint16) _HICON {
 	_ret, _, _ := user32LoadIconW.Call(
 		uintptr((hInstance)),
@@ -99,6 +104,7 @@ func loadIcon(hInstance _HINSTANCE, iconName *uint16) _HICON {
 }
 
 var user32LoadCursorW = user32.MustFindProc("LoadCursorW")
+
 func loadCursor(hinstance _HINSTANCE, cursorName *uint16) _HCURSOR {
 	_ret, _, _ := user32LoadCursorW.Call(
 		uintptr((hinstance)),
@@ -108,6 +114,7 @@ func loadCursor(hinstance _HINSTANCE, cursorName *uint16) _HCURSOR {
 }
 
 var user32RegisterClassExW = user32.MustFindProc("RegisterClassExW")
+
 func registerClassEx(wcx *_WNDCLASSEX) uint16 {
 	_ret, _, _ := user32RegisterClassExW.Call(
 		uintptr(unsafe.Pointer(wcx)),
@@ -116,6 +123,7 @@ func registerClassEx(wcx *_WNDCLASSEX) uint16 {
 }
 
 var user32ShowWindow = user32.MustFindProc("ShowWindow")
+
 func showWindow(hwnd _HWND, nCmdShow int32) bool {
 	_ret, _, _ := user32ShowWindow.Call(
 		uintptr((hwnd)),
@@ -125,6 +133,7 @@ func showWindow(hwnd _HWND, nCmdShow int32) bool {
 }
 
 var user32SetFocus = user32.MustFindProc("SetFocus")
+
 func setFocus(hwnd _HWND) _HWND {
 	_ret, _, _ := user32SetFocus.Call(
 		uintptr((hwnd)),
@@ -133,6 +142,7 @@ func setFocus(hwnd _HWND) _HWND {
 }
 
 var user32DefWindowProcW = user32.MustFindProc("DefWindowProcW")
+
 func defWindowProc(hwnd uintptr, msg uint32, wparam, lparam uintptr) uintptr {
 	_ret, _, _ := user32DefWindowProcW.Call(
 		uintptr((hwnd)),
@@ -144,6 +154,7 @@ func defWindowProc(hwnd uintptr, msg uint32, wparam, lparam uintptr) uintptr {
 }
 
 var user32GetMessageW = user32.MustFindProc("GetMessageW")
+
 func getMessage(lpMsg *_MSG, hwnd uintptr, wMsgFilterMin, wMsgFilterMax uint32) bool {
 	_ret, _, _ := user32GetMessageW.Call(
 		uintptr(unsafe.Pointer(lpMsg)),
@@ -155,6 +166,7 @@ func getMessage(lpMsg *_MSG, hwnd uintptr, wMsgFilterMin, wMsgFilterMax uint32) 
 }
 
 var user32PeekMessageW = user32.MustFindProc("PeekMessageW")
+
 func peekMessage(lpMsg *_MSG, hwnd uintptr, wMsgFilterMin, wMsgFilterMax, wRemoveMsg uint32) bool {
 	_ret, _, _ := user32PeekMessageW.Call(
 		uintptr(unsafe.Pointer(lpMsg)),
@@ -167,6 +179,7 @@ func peekMessage(lpMsg *_MSG, hwnd uintptr, wMsgFilterMin, wMsgFilterMax, wRemov
 }
 
 var user32TranslateMessage = user32.MustFindProc("TranslateMessage")
+
 func translateMessage(msg *_MSG) bool {
 	_ret, _, _ := user32TranslateMessage.Call(
 		uintptr(unsafe.Pointer(msg)),
@@ -175,6 +188,7 @@ func translateMessage(msg *_MSG) bool {
 }
 
 var user32DispatchMessageW = user32.MustFindProc("DispatchMessageW")
+
 func dispatchMessage(msg *_MSG) uintptr {
 	_ret, _, _ := user32DispatchMessageW.Call(
 		uintptr(unsafe.Pointer(msg)),
@@ -183,6 +197,7 @@ func dispatchMessage(msg *_MSG) uintptr {
 }
 
 var user32SetTimer = user32.MustFindProc("SetTimer")
+
 func setTimer(hwnd _HWND, nIDEvent uintptr, uElapse uint32, lpTimerFunc uintptr) uintptr {
 	_ret, _, _ := user32SetTimer.Call(
 		uintptr((hwnd)),
@@ -194,6 +209,7 @@ func setTimer(hwnd _HWND, nIDEvent uintptr, uElapse uint32, lpTimerFunc uintptr)
 }
 
 var user32KillTimer = user32.MustFindProc("KillTimer")
+
 func killTimer(hwnd _HWND, uIDEvent uintptr) bool {
 	_ret, _, _ := user32KillTimer.Call(
 		uintptr((hwnd)),
@@ -203,6 +219,7 @@ func killTimer(hwnd _HWND, uIDEvent uintptr) bool {
 }
 
 var kernel32GetModuleHandleW = kernel32.MustFindProc("GetModuleHandleW")
+
 func getModuleHandle(moduleName string) _HINSTANCE {
 	_ret, _, _ := kernel32GetModuleHandleW.Call(
 		uintptr(stringToUintptr(moduleName)),
@@ -211,13 +228,14 @@ func getModuleHandle(moduleName string) _HINSTANCE {
 }
 
 var kernel32GetLastError = kernel32.MustFindProc("GetLastError")
+
 func getLastError() uint32 {
-	_ret, _, _ := kernel32GetLastError.Call(
-	)
+	_ret, _, _ := kernel32GetLastError.Call()
 	return uint32((_ret))
 }
 
 var kernel32CreateTimerQueueTimer = kernel32.MustFindProc("CreateTimerQueueTimer")
+
 func createTimerQueueTimer(phNewTimer *uintptr, TimerQueue, Callback, Parameter uintptr, DueTime, Period int32, Flags uint32) bool {
 	_ret, _, _ := kernel32CreateTimerQueueTimer.Call(
 		uintptr(unsafe.Pointer(phNewTimer)),
@@ -232,6 +250,7 @@ func createTimerQueueTimer(phNewTimer *uintptr, TimerQueue, Callback, Parameter 
 }
 
 var kernel32DeleteTimerQueueTimer = kernel32.MustFindProc("DeleteTimerQueueTimer")
+
 func deleteTimerQueueTimer(TimerQueue, Timer, CompletionEvent uintptr) bool {
 	_ret, _, _ := kernel32DeleteTimerQueueTimer.Call(
 		uintptr((TimerQueue)),
@@ -242,6 +261,7 @@ func deleteTimerQueueTimer(TimerQueue, Timer, CompletionEvent uintptr) bool {
 }
 
 var gdi32SetPixelFormat = gdi32.MustFindProc("SetPixelFormat")
+
 func setPixelFormat(hdc _HDC, iPixelFormat int32, ppfd *_PIXELFORMATDESCRIPTOR) bool {
 	_ret, _, _ := gdi32SetPixelFormat.Call(
 		uintptr((hdc)),
@@ -252,6 +272,7 @@ func setPixelFormat(hdc _HDC, iPixelFormat int32, ppfd *_PIXELFORMATDESCRIPTOR) 
 }
 
 var gdi32ChoosePixelFormat = gdi32.MustFindProc("ChoosePixelFormat")
+
 func choosePixelFormat(hdc _HDC, ppfd *_PIXELFORMATDESCRIPTOR) int32 {
 	_ret, _, _ := gdi32ChoosePixelFormat.Call(
 		uintptr((hdc)),
@@ -261,10 +282,10 @@ func choosePixelFormat(hdc _HDC, ppfd *_PIXELFORMATDESCRIPTOR) int32 {
 }
 
 var gdi32SwapBuffers = gdi32.MustFindProc("SwapBuffers")
+
 func swapBuffers(hdc _HDC) bool {
 	_ret, _, _ := gdi32SwapBuffers.Call(
 		uintptr((hdc)),
 	)
 	return bool(uintptrToBool(_ret))
 }
- 

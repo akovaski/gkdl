@@ -14,12 +14,12 @@ type _POINT struct {
 }
 
 type _MSG struct {
-	hwnd _HWND
+	hwnd    _HWND
 	message uint32
-	WParam uintptr
-	LParam uintptr
-	time uint32
-	pt _POINT
+	WParam  uintptr
+	LParam  uintptr
+	time    uint32
+	pt      _POINT
 }
 
 type rect struct {
@@ -27,45 +27,45 @@ type rect struct {
 }
 
 type _WNDCLASSEX struct {
-	size uint32
-	style uint32
-	wndProc uintptr
-	clsExtra int32
-	wndExtra int32
-	hInstance _HINSTANCE
-	hIcon _HICON
-	hCursor _HCURSOR
+	size          uint32
+	style         uint32
+	wndProc       uintptr
+	clsExtra      int32
+	wndExtra      int32
+	hInstance     _HINSTANCE
+	hIcon         _HICON
+	hCursor       _HCURSOR
 	hbrBackground _HBRUSH
-	menuName *uint16
-	className *uint16
-	iconSm _HICON
+	menuName      *uint16
+	className     *uint16
+	iconSm        _HICON
 }
 
 type _PIXELFORMATDESCRIPTOR struct {
-	size uint16
-	version uint16
-	dwFlags uint32
-	iPixelType byte
-	colorBits byte
-	redBits byte
-	redShift byte
-	greenBits byte
-	greenShift byte
-	blueBits byte
-	blueShift byte
-	alphaBits byte
-	alphaShift byte
-	accumBits byte
-	accumRedBits byte
+	size           uint16
+	version        uint16
+	dwFlags        uint32
+	iPixelType     byte
+	colorBits      byte
+	redBits        byte
+	redShift       byte
+	greenBits      byte
+	greenShift     byte
+	blueBits       byte
+	blueShift      byte
+	alphaBits      byte
+	alphaShift     byte
+	accumBits      byte
+	accumRedBits   byte
 	accumGreenBits byte
-	accumBlueBits byte
+	accumBlueBits  byte
 	accumAlphaBits byte
-	depthBits byte
-	stencilBits byte
-	auxBuffers byte
-	iLayerType byte
-	reserved byte
-	dwLayerMask uint32
-	dwVisibleMask uint32
-	dwDamageMask uint32
+	depthBits      byte
+	stencilBits    byte
+	auxBuffers     byte
+	iLayerType     byte
+	reserved       byte
+	dwLayerMask    uint32
+	dwVisibleMask  uint32
+	dwDamageMask   uint32
 }
