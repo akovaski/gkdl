@@ -71,7 +71,7 @@ func CreateContext(name string, width, height uint32, majorVersion, minorVersion
 		return nil, fmt.Errorf("Could not open event display")
 	}
 
-    events := make(chan Events, 128)
+    events := make(chan Event, 128)
     c.Events = events
 
 	go func() {
