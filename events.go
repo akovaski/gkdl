@@ -21,13 +21,13 @@ type MouseButtons struct {
 	X2 bool // X2
 }
 
-type MouseButtonUp struct {
-	Button MouseButtons // Which button was released
+type MouseButtonDown struct {
+	Button MouseButtons // Which button was pressed
 	mouseState
 }
 
-type MouseButtonDown struct {
-	Button MouseButtons // Which button was pressed
+type MouseButtonUp struct {
+	Button MouseButtons // Which button was released
 	mouseState
 }
 
