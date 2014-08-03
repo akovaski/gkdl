@@ -63,10 +63,6 @@ func CreateContext(name string, width, height uint32, majorVersion, minorVersion
 		return nil, fmt.Errorf("Could not create X11 visual")
 	}
 
-	c.glc = C.glXCreateContext(c.dpy, vi, nil, C.GL_TRUE)
-	if c.glc == nil {
-		return nil, fmt.Errorf("Could not create rendering context")
-	}
 	// x color map
 	cmap := C.XCreateColormap(c.dpy, root, vi.visual, C.AllocNone)
 	swa := C.XSetWindowAttributes{}
@@ -74,7 +70,12 @@ func CreateContext(name string, width, height uint32, majorVersion, minorVersion
 	swa.border_pixel = 0
 	c.win = C.XCreateWindow(c.dpy, root, 0, 0, C.uint(width), C.uint(height), 0, vi.depth, C.InputOutput, vi.visual, C.CWBorderPixel|C.CWColormap, &swa)
 
-	C.XSetStandardProperties(c.dpy, c.win, C.CString("xogl"), C.CString("xogl"), C.None, nil, 0, nil)
+	C.XSetStandardProperties(c.dpy, c.win, C.CString(name), C.CString(name), C.None, nil, 0, nil)
+
+	c.glc = C.glXCreateContext(c.dpy, vi, nil, C.GL_TRUE)
+	if c.glc == nil {
+		return nil, fmt.Errorf("Could not create rendering context")
+	}
 
 	C.glXMakeCurrent(c.dpy, C.GLXDrawable(c.win), c.glc)
 	C.XMapWindow(c.dpy, c.win)
@@ -102,6 +103,7 @@ func CreateContext(name string, width, height uint32, majorVersion, minorVersion
 func (c Context) SwapBuffers() {
 	C.glXSwapBuffers(c.dpy, C.GLXDrawable(c.win))
 
+    // retrieve any ClientMessage events (because they aren't caught by the event go-routine
 	var xev C.XEvent
     for C.XEventsQueued(c.dpy, C.QueuedAlready) != 0 {
 		C.XNextEvent(c.dpy, &xev)
