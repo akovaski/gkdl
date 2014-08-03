@@ -99,12 +99,6 @@ func CreateContext(name string, width, height uint32, majorVersion, minorVersion
 	return c, nil
 }
 
-func (c *Context) NextEvent() C.XEvent {
-    var xev C.XEvent
-    C.XNextEvent(c.dpy, &xev)
-    return xev
-}
-
 func (c Context) SwapBuffers() {
 	C.glXSwapBuffers(c.dpy, C.GLXDrawable(c.win))
 
