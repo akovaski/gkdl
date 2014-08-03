@@ -87,12 +87,11 @@ func CreateContext(name string, width, height uint32, majorVersion, minorVersion
 
 	go func() {
 		runtime.LockOSThread()
-		//C.XSelectInput(evdisp, c.win, C.StructureNotifyMask|C.ExposureMask|C.KeyPressMask|C.KeyReleaseMask|C.ButtonPressMask|C.PointerMotionMask)
+		//C.StructureNotifyMask|C.ExposureMask
 		C.XSelectInput(c.edpy, c.win,
             C.KeyPressMask|C.KeyReleaseMask| // Key Events
             C.ButtonPressMask|C.ButtonReleaseMask| // Mouse Button Events
-            C.PointerMotionMask|
-            C.StructureNotifyMask|C.ExposureMask, // Mouse Motion Events
+            C.PointerMotionMask, // Mouse Motion Events
         )
 		handleEvents(c.edpy, c.win, c.events)
 	}()
