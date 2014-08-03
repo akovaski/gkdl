@@ -9,7 +9,8 @@ import "C"
 import (
 	"fmt"
 	"runtime"
-	//"unsafe"
+	"encoding/binary"
+	"unsafe"
 )
 
 type Context struct {
@@ -17,6 +18,7 @@ type Context struct {
     edpy   *C.Display // Event Display
     glc   C.GLXContext
 	win    C.Window
+    events chan Event
 	Events <-chan Event
 }
 
@@ -77,15 +79,14 @@ func CreateContext(name string, width, height uint32, majorVersion, minorVersion
 	C.glXMakeCurrent(c.dpy, C.GLXDrawable(c.win), c.glc)
 	C.XMapWindow(c.dpy, c.win)
 
-	events := make(chan Event, 128)
-	c.Events = events
-    //wmDelete := C.XInternAtom(c.dpy, C.CString("WM_DELETE_WINDOW"), 0)
-    //C.XSetWMProtocols(c.dpy, c.win, &wmDelete, 1)
+	c.events = make(chan Event, 128)
+	c.Events = c.events
+
+    wmDelete := C.XInternAtom(c.dpy, C.CString("WM_DELETE_WINDOW"), 0)
+    C.XSetWMProtocols(c.dpy, c.win, &wmDelete, 1)
 
 	go func() {
 		runtime.LockOSThread()
-        wmDelete2 := C.XInternAtom(c.edpy, C.CString("WM_DELETE_WINDOW"), 1)
-        C.XSetWMProtocols(c.edpy, c.win, &wmDelete2, 1)
 		//C.XSelectInput(evdisp, c.win, C.StructureNotifyMask|C.ExposureMask|C.KeyPressMask|C.KeyReleaseMask|C.ButtonPressMask|C.PointerMotionMask)
 		C.XSelectInput(c.edpy, c.win,
             C.KeyPressMask|C.KeyReleaseMask| // Key Events
@@ -93,7 +94,7 @@ func CreateContext(name string, width, height uint32, majorVersion, minorVersion
             C.PointerMotionMask|
             C.StructureNotifyMask|C.ExposureMask, // Mouse Motion Events
         )
-		handleEvents(c.edpy, c.win, events)
+		handleEvents(c.edpy, c.win, c.events)
 	}()
 
 	return c, nil
@@ -107,4 +108,23 @@ func (c *Context) NextEvent() C.XEvent {
 
 func (c Context) SwapBuffers() {
 	C.glXSwapBuffers(c.dpy, C.GLXDrawable(c.win))
+
+	var xev C.XEvent
+    for C.XEventsQueued(c.dpy, C.QueuedAlready) != 0 {
+		C.XNextEvent(c.dpy, &xev)
+		etype := binary.LittleEndian.Uint32(xev[0:4])
+        switch etype {
+        case C.ClientMessage:
+			mess := *(*C.XClientMessageEvent)(unsafe.Pointer(&xev))
+            switch *(*C.long)(unsafe.Pointer(&mess.data)) {
+            case C.long(C.XInternAtom(c.dpy, C.CString("WM_DELETE_WINDOW"), 1)):
+                fmt.Println("WM_DELETE_WINDOW message");
+                go func() { c.events <- Quit{} }()
+            default:
+                fmt.Printf("Unhandled Client Message %+v\n", mess);
+            }
+        default:
+            fmt.Printf("Non-Client Message event appeared where it shouldn't %+v\n", xev)
+        }
+    }
 }
