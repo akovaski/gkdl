@@ -5,6 +5,14 @@ package gkdl
 // #include <X11/Xlib.h>
 // #include <GL/gl.h>
 // #include <GL/glx.h>
+// GLXContext CreateContextAttribsARB(
+//              Display *dpy, GLXFBConfig config,
+//              GLXContext share_context, Bool direct,
+//              const int *attrib_list) {
+//      PFNGLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB =
+//      (PFNGLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((GLubyte*)"glXCreateContextAttribsARB");
+//      return glXCreateContextAttribsARB(dpy, config, share_context, direct, attrib_list);
+// }
 import "C"
 import (
 	"fmt"
@@ -72,12 +80,32 @@ func CreateContext(name string, width, height uint32, majorVersion, minorVersion
 
 	C.XSetStandardProperties(c.dpy, c.win, C.CString(name), C.CString(name), C.None, nil, 0, nil)
 
-	c.glc = C.glXCreateContext(c.dpy, vi, nil, C.GL_TRUE)
-	if c.glc == nil {
-		return nil, fmt.Errorf("Could not create rendering context")
-	}
+    // Trying to get a version greater than 3.0 is untested, but might work
+    if (majorVersion > 3 || (majorVersion == 3 && minorVersion > 0)) {
+        if SupportExtension("GLX_ARB_create_context") == false {
+            return nil, fmt.Errorf("Could not create gl context of specified version")
+        }
+
+        gl3attr := [...]C.int{ C.GLX_CONTEXT_MAJOR_VERSION_ARB, C.int(majorVersion),
+                               C.GLX_CONTEXT_MINOR_VERSION_ARB, C.int(minorVersion),
+                               C.None}
+        var elemc C.int
+        fbcfg := C.glXChooseFBConfig(c.dpy, vi.screen, nil, &elemc)
+        c.glc = C.CreateContextAttribsARB(c.dpy, *fbcfg, nil, 1, &gl3attr[0])
+    } else {
+        c.glc = C.glXCreateContext(c.dpy, vi, nil, C.GL_TRUE)
+        if c.glc == nil {
+            return nil, fmt.Errorf("Could not create rendering context")
+        }
+    }
 
 	C.glXMakeCurrent(c.dpy, C.GLXDrawable(c.win), c.glc)
+
+    major, minor := GetVersion();
+    if major < majorVersion || (major == majorVersion && minor < minorVersion) {
+        return nil fmt.Errorf("Could not create an appropriate OpenGL context");
+    }
+
 	C.XMapWindow(c.dpy, c.win)
 
 	c.events = make(chan Event, 128)
