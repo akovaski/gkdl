@@ -3,7 +3,7 @@
 This project is not stable and may change drastically in the future (including
 its name). Nor is this project thoroughly tested, use at your own risk.
 
-That being said, it's usable on Windows, plans for linux soon.
+That being said, it seems to be functional on Windows and Linux.
 
 To use:
 * Create a Context (A window + OpenGL context) using CreateContext(...)
