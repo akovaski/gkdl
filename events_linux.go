@@ -52,55 +52,55 @@ func handleEvents(dpy *C.Display, win C.Window, events chan<- Event) {
 		case C.ButtonPress:
 			mv := *(*C.XButtonEvent)(unsafe.Pointer(&xev))
 
-            switch mv.button {
-            case 4,5:
-                // this is a scroll event
-                var ev MouseWheel
-                if mv.button == 4 {
-                    ev.WheelDelta = 1
-                } else {
-                    ev.WheelDelta = -1
-                }
-                ev.getMouseState(mv.x, mv.y, mv.state)
+			switch mv.button {
+			case 4, 5:
+				// this is a scroll event
+				var ev MouseWheel
+				if mv.button == 4 {
+					ev.WheelDelta = 1
+				} else {
+					ev.WheelDelta = -1
+				}
+				ev.getMouseState(mv.x, mv.y, mv.state)
 
-                events <- ev
-            case 1,2,3:
-                // regulare button press
-                var ev MouseButtonDown
-                ev.Button = buttonToButton(mv.button)
+				events <- ev
+			case 1, 2, 3:
+				// regulare button press
+				var ev MouseButtonDown
+				ev.Button = buttonToButton(mv.button)
 
-                ev.getMouseState(mv.x, mv.y, mv.state)
+				ev.getMouseState(mv.x, mv.y, mv.state)
 
-                events <- ev
-            }
+				events <- ev
+			}
 
-        case C.ButtonRelease:
+		case C.ButtonRelease:
 			mv := *(*C.XButtonEvent)(unsafe.Pointer(&xev))
 
-            switch mv.button {
-            case 1,2,3:
-                var ev MouseButtonUp
-                ev.Button = buttonToButton(mv.button)
+			switch mv.button {
+			case 1, 2, 3:
+				var ev MouseButtonUp
+				ev.Button = buttonToButton(mv.button)
 
-                ev.getMouseState(mv.x, mv.y, mv.state)
+				ev.getMouseState(mv.x, mv.y, mv.state)
 
-                events <- ev
-            }
+				events <- ev
+			}
 
-        case C.MotionNotify:
-            mv := *(*C.XMotionEvent)(unsafe.Pointer(&xev))
+		case C.MotionNotify:
+			mv := *(*C.XMotionEvent)(unsafe.Pointer(&xev))
 
-            var ev MouseMotion
-            ev.getMouseState(mv.x, mv.y, mv.state)
+			var ev MouseMotion
+			ev.getMouseState(mv.x, mv.y, mv.state)
 
-            events <- ev
+			events <- ev
 
-        case C.ClientMessage:
-            fmt.Println("Destroy Notify Event")
-            events <- Quit{}
+		case C.ClientMessage:
+			fmt.Println("Destroy Notify Event")
+			events <- Quit{}
 
-        default:
-            fmt.Println("Etype", etype)
+		default:
+			fmt.Println("Etype", etype)
 		}
 	}
 }
@@ -121,7 +121,7 @@ func buttonToButton(button C.uint) MouseButtons {
 		b.R = true
 	case 8:
 		b.X1 = true
-    case 9:
+	case 9:
 		b.X2 = true
 	}
 	return b

@@ -99,11 +99,11 @@ func CreateWndProc(events chan<- Event) func(hwnd _HWND, msg uint32, wparam, lpa
 		case _WM_MOUSEWHEEL:
 			var ev MouseWheel
 			ev.getMouseState(wparam, lparam)
-            if (wparam >> 16) > 0 {
-                ev.WheelDelta = 1
-            } else {
-                ev.WheelDelta = -1
-            }
+			if (wparam >> 16) > 0 {
+				ev.WheelDelta = 1
+			} else {
+				ev.WheelDelta = -1
+			}
 			events <- ev
 			return 0
 
