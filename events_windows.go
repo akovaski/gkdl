@@ -1,17 +1,5 @@
 package gkdl
 
-import (
-	"log"
-)
-
-const (
-	lButtonMask  = 0x1
-	rButtonMask  = 0x2
-	mButtonMask  = 0x10
-	x1ButtonMask = 0x20
-	x2ButtonMask = 0x40
-)
-
 /* TODO:
 Deal with alt, ctrl, ... keys ghosting
 */
