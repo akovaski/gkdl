@@ -101,9 +101,10 @@ func CreateContext(name string, width, height uint32, majorVersion, minorVersion
 
 	C.glXMakeCurrent(c.dpy, C.GLXDrawable(c.win), c.glc)
 
-    major, minor := GetVersion();
-    if major < majorVersion || (major == majorVersion && minor < minorVersion) {
-        return nil fmt.Errorf("Could not create an appropriate OpenGL context");
+    major, minor := GetVersion()
+    fmt.Println(major, minor)
+    if major < int(majorVersion) || (major == int(majorVersion) && minor < int(minorVersion)) {
+        return nil, fmt.Errorf("Could not create an appropriate OpenGL context")
     }
 
 	C.XMapWindow(c.dpy, c.win)

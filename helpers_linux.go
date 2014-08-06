@@ -3,9 +3,17 @@ package gkdl
 // #include <GL/gl.h>
 import "C"
 import (
+    "fmt"
     "strings"
     "unsafe"
 )
+
+func GetVersion() (major int, minor int) {
+    ver := C.GoString((*C.char)(unsafe.Pointer(C.glGetString(C.GL_VERSION))))
+
+	fmt.Sscanf(ver, "%d.%d.", &major, &minor)
+	return major, minor
+}
 
 var gl_extensions map[string]bool
 
