@@ -30,20 +30,20 @@ func (c Context) KillWindow() error {
 		if wglDeleteContext(c.hRC) == false {
 			return errors.New("Release Rendering Contex Failed")
 		}
-		c.hRC = 0
 	}
+	c.hRC = 0
 
 	//kill hDC Device Context
 	if c.hDC != 0 && releaseDC(c.hwnd, c.hDC) == false {
 		return errors.New("Release Device Context Failed")
-		c.hDC = 0
 	}
+	c.hDC = 0
 
 	//destroy hwnd window handler
 	if c.hwnd != 0 && destroyWindow(c.hwnd) == false {
 		return errors.New("Could not release hwnd")
-		c.hwnd = 0
 	}
+	c.hwnd = 0
 
 	close(c.events)
 
