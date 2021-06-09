@@ -43,90 +43,110 @@ func (c Context) KillWindow() error {
 
 func CreateContext(name string, width, height uint32, majorVersion, minorVersion int32) (*Context, error) {
 	runtime.LockOSThread()
-	C.XInitThreads()
 	c := new(Context)
-	c.dpy = C.XOpenDisplay(nil)
-
-	if c.dpy == nil {
-		return nil, fmt.Errorf("Could not open X11 display")
-	}
-
-	c.edpy = C.XOpenDisplay(nil)
-	if c.edpy == nil {
-		return nil, fmt.Errorf("Could not open event display")
-	}
-
-	var dummy C.int
-	if 0 == C.glXQueryExtension(c.dpy, &dummy, &dummy) {
-		return nil, fmt.Errorf("Could not open display")
-	}
-
-	root := C.XDefaultRootWindow(c.dpy)
-
-	attributes := []C.int{C.GLX_RGBA, C.GLX_DEPTH_SIZE, 24, C.GLX_DOUBLEBUFFER, C.None}
-
-	vi := C.glXChooseVisual(c.dpy, C.XDefaultScreen(c.dpy), &attributes[0])
-
-	if vi == nil {
-		return nil, fmt.Errorf("Could not create X11 visual")
-	}
-
-	// x color map
-	cmap := C.XCreateColormap(c.dpy, root, vi.visual, C.AllocNone)
-	swa := C.XSetWindowAttributes{}
-	swa.colormap = cmap
-	swa.border_pixel = 0
-	c.win = C.XCreateWindow(c.dpy, root, 0, 0, C.uint(width), C.uint(height), 0, vi.depth, C.InputOutput, vi.visual, C.CWBorderPixel|C.CWColormap, &swa)
-
-	C.XSetStandardProperties(c.dpy, c.win, C.CString(name), C.CString(name), C.None, nil, 0, nil)
-
-	// Trying to get a version greater than 3.0 is untested, but might work
-	if majorVersion > 3 || (majorVersion == 3 && minorVersion > 0) {
-		if SupportExtension("GLX_ARB_create_context") == false {
-			return nil, fmt.Errorf("Could not create gl context of specified version")
-		}
-
-		gl3attr := [...]C.int{C.GLX_CONTEXT_MAJOR_VERSION_ARB, C.int(majorVersion),
-			C.GLX_CONTEXT_MINOR_VERSION_ARB, C.int(minorVersion),
-			C.None}
-		var elemc C.int
-		fbcfg := C.glXChooseFBConfig(c.dpy, vi.screen, nil, &elemc)
-		c.glc = C.CreateContextAttribsARB(c.dpy, *fbcfg, nil, 1, &gl3attr[0])
-	} else {
-		c.glc = C.glXCreateContext(c.dpy, vi, nil, C.GL_TRUE)
-		if c.glc == nil {
-			return nil, fmt.Errorf("Could not create rendering context")
-		}
-	}
-
-	C.glXMakeCurrent(c.dpy, C.GLXDrawable(c.win), c.glc)
-
-	major, minor := GetVersion()
-	fmt.Println(major, minor)
-	if major < int(majorVersion) || (major == int(majorVersion) && minor < int(minorVersion)) {
-		return nil, fmt.Errorf("Could not create an appropriate OpenGL context")
-	}
-
-	C.XMapWindow(c.dpy, c.win)
-
-	c.events = make(chan Event, 128)
-	c.Events = c.events
-
-	wmDelete := C.XInternAtom(c.dpy, C.CString("WM_DELETE_WINDOW"), 0)
-	C.XSetWMProtocols(c.dpy, c.win, &wmDelete, 1)
+	err := make(chan error)
+	var vi *C.XVisualInfo
 
 	go func() {
-		runtime.LockOSThread()
-		//C.StructureNotifyMask|C.ExposureMask
-		C.XSelectInput(c.edpy, c.win,
-			C.KeyPressMask|C.KeyReleaseMask| // Key Events
-				C.ButtonPressMask|C.ButtonReleaseMask| // Mouse Button Events
-				C.PointerMotionMask, // Mouse Motion Events
-		)
-		handleEvents(c.edpy, c.win, c.events)
+		err <- func() error {
+			runtime.LockOSThread()
+			C.XInitThreads()
+			c.dpy = C.XOpenDisplay(nil)
+
+			if c.dpy == nil {
+				return fmt.Errorf("Could not open X11 display")
+			}
+
+			c.edpy = C.XOpenDisplay(nil)
+			if c.edpy == nil {
+				return fmt.Errorf("Could not open event display")
+			}
+
+			var dummy C.int
+			if 0 == C.glXQueryExtension(c.dpy, &dummy, &dummy) {
+				return fmt.Errorf("Could not open display")
+			}
+
+			root := C.XDefaultRootWindow(c.dpy)
+
+			attributes := []C.int{C.GLX_RGBA, C.GLX_DEPTH_SIZE, 24, C.GLX_DOUBLEBUFFER, C.None}
+
+			vi = C.glXChooseVisual(c.dpy, C.XDefaultScreen(c.dpy), &attributes[0])
+
+			if vi == nil {
+				return fmt.Errorf("Could not create X11 visual")
+			}
+
+			// x color map
+			cmap := C.XCreateColormap(c.dpy, root, vi.visual, C.AllocNone)
+			swa := C.XSetWindowAttributes{}
+			swa.colormap = cmap
+			swa.border_pixel = 0
+			c.win = C.XCreateWindow(c.dpy, root, 0, 0, C.uint(width), C.uint(height), 0, vi.depth, C.InputOutput, vi.visual, C.CWBorderPixel|C.CWColormap, &swa)
+
+			C.XSetStandardProperties(c.dpy, c.win, C.CString(name), C.CString(name), C.None, nil, 0, nil)
+
+			// Trying to get a version greater than 3.0 is untested, but might work
+			if majorVersion > 3 || (majorVersion == 3 && minorVersion > 0) {
+				if SupportExtension("GLX_ARB_create_context") == false {
+					return fmt.Errorf("Could not create gl context of specified version")
+				}
+
+				gl3attr := [...]C.int{C.GLX_CONTEXT_MAJOR_VERSION_ARB, C.int(majorVersion),
+					C.GLX_CONTEXT_MINOR_VERSION_ARB, C.int(minorVersion),
+					C.None}
+				var elemc C.int
+				fbcfg := C.glXChooseFBConfig(c.dpy, vi.screen, nil, &elemc)
+				c.glc = C.CreateContextAttribsARB(c.dpy, *fbcfg, nil, 1, &gl3attr[0])
+			} else {
+				c.glc = C.glXCreateContext(c.dpy, vi, nil, C.GL_TRUE)
+				if c.glc == nil {
+					return fmt.Errorf("Could not create rendering context")
+				}
+			}
+
+			C.glXMakeCurrent(c.dpy, C.GLXDrawable(c.win), c.glc)
+
+			major, minor := GetVersion()
+			fmt.Println(major, minor)
+			if major < int(majorVersion) || (major == int(majorVersion) && minor < int(minorVersion)) {
+				return fmt.Errorf("Could not create an appropriate OpenGL context")
+			}
+
+			c.events = make(chan Event, 128)
+			c.Events = c.events
+
+			wmDelete := C.XInternAtom(c.dpy, C.CString("WM_DELETE_WINDOW"), 0)
+			C.XSetWMProtocols(c.dpy, c.win, &wmDelete, 1)
+
+			go func() {
+				runtime.LockOSThread()
+				//C.StructureNotifyMask|C.ExposureMask
+				C.XSelectInput(c.edpy, c.win,
+					C.KeyPressMask|C.KeyReleaseMask| // Key Events
+						C.ButtonPressMask|C.ButtonReleaseMask| // Mouse Button Events
+						C.PointerMotionMask, // Mouse Motion Events
+				)
+				handleEvents(c.edpy, c.win, c.events)
+			}()
+
+			return nil
+		}()
 	}()
 
-	return c, nil
+	winErr := <-err
+
+	runtime.LockOSThread()
+	c.glc = C.glXCreateContext(c.dpy, vi, nil, C.GL_TRUE)
+	if c.glc == nil {
+		return nil, fmt.Errorf("Could not create rendering context")
+	}
+	if winErr == nil {
+		C.XMapWindow(c.dpy, c.win)
+		C.glXMakeCurrent(c.dpy, C.GLXDrawable(c.win), c.glc)
+	}
+
+	return c, winErr
 }
 
 func (c Context) SwapBuffers() {

@@ -95,10 +95,6 @@ func handleEvents(dpy *C.Display, win C.Window, events chan<- Event) {
 
 			events <- ev
 
-		case C.ClientMessage:
-			fmt.Println("Destroy Notify Event")
-			events <- Quit{}
-
 		default:
 			fmt.Println("Etype", etype)
 		}
